@@ -1,8 +1,8 @@
-// port-lint: source src/error.rs
+// port-lint: source error.rs
 package io.github.kotlinmania.semver
 
 internal sealed class ErrorKind {
-    object Empty : ErrorKind()
+    data object Empty : ErrorKind()
     data class UnexpectedEnd(val pos: Position) : ErrorKind()
     data class UnexpectedChar(val pos: Position, val ch: Char) : ErrorKind()
     data class UnexpectedCharAfter(val pos: Position, val ch: Char) : ErrorKind()
@@ -12,8 +12,8 @@ internal sealed class ErrorKind {
     data class EmptySegment(val pos: Position) : ErrorKind()
     data class IllegalCharacter(val pos: Position) : ErrorKind()
     data class WildcardNotTheOnlyComparator(val ch: Char) : ErrorKind()
-    object UnexpectedAfterWildcard : ErrorKind()
-    object ExcessiveComparators : ErrorKind()
+    data object UnexpectedAfterWildcard : ErrorKind()
+    data object ExcessiveComparators : ErrorKind()
 }
 
 internal enum class Position {
@@ -22,63 +22,120 @@ internal enum class Position {
     Patch,
     Pre,
     Build;
-
-    override fun toString(): String = when (this) {
-        Major -> "major version number"
-        Minor -> "minor version number"
-        Patch -> "patch version number"
-        Pre -> "pre-release identifier"
-        Build -> "build metadata"
-    }
 }
 
-// Display impl for Error. Operates only on the error's kind, so the
-// implementation lives here in the error file even though Error itself
-// is declared alongside the parser. Rendering helpers stay internal.
-internal fun errorDisplay(kind: ErrorKind): String = when (kind) {
-    is ErrorKind.Empty -> "empty string, expected a semver version"
-    is ErrorKind.UnexpectedEnd -> "unexpected end of input while parsing ${kind.pos}"
-    is ErrorKind.UnexpectedChar -> "unexpected character ${quotedChar(kind.ch)} while parsing ${kind.pos}"
-    is ErrorKind.UnexpectedCharAfter -> "unexpected character ${quotedChar(kind.ch)} after ${kind.pos}"
-    is ErrorKind.ExpectedCommaFound -> "expected comma after ${kind.pos}, found ${quotedChar(kind.ch)}"
-    is ErrorKind.LeadingZero -> "invalid leading zero in ${kind.pos}"
-    is ErrorKind.Overflow -> "value of ${kind.pos} exceeds u64::MAX"
-    is ErrorKind.EmptySegment -> "empty identifier segment in ${kind.pos}"
-    is ErrorKind.IllegalCharacter -> "unexpected character in ${kind.pos}"
-    is ErrorKind.WildcardNotTheOnlyComparator -> "wildcard req (${kind.ch}) must be the only comparator in the version req"
-    is ErrorKind.UnexpectedAfterWildcard -> "unexpected character after wildcard in version req"
-    is ErrorKind.ExcessiveComparators -> "excessive number of version comparators"
-}
+internal fun errorDisplay(kind: ErrorKind): String =
+    fmt(Error(kind))
 
-// Debug impl for Error. Mirrors upstream: Error("<display>").
-internal fun errorDebug(kind: ErrorKind): String = "Error(\"${errorDisplay(kind)}\")"
+internal fun debugErrorDisplay(error: Error): String =
+    fmt(DebugError(error))
 
-// Standard library versions prior to https://github.com/rust-lang/rust/pull/95345
-// print character 0 as '\u{0}'. We prefer '\0' to keep error messages
-// the same across all supported Rust versions.
-private fun quotedChar(ch: Char): String =
-    if (ch == '\u0000') {
-        "'\\0'"
-    } else {
-        debugQuoteChar(ch)
-    }
-
-// Equivalent of Rust's `{:?}` formatting for a char: a single-quoted
-// character with debug-style escaping for special and non-printable
-// code points.
-private fun debugQuoteChar(ch: Char): String {
-    val body = when (ch) {
-        '\t' -> "\\t"
-        '\n' -> "\\n"
-        '\r' -> "\\r"
-        '\\' -> "\\\\"
-        '\'' -> "\\'"
-        '"' -> "\\\""
-        else -> if (ch.code < 0x20 || ch.code == 0x7F) {
-            "\\u{${ch.code.toString(16)}}"
-        } else {
-            ch.toString()
+internal fun fmt(error: Error): String =
+    when (val kind = error.kind) {
+        ErrorKind.Empty -> "empty string, expected a semver version"
+        is ErrorKind.UnexpectedEnd -> "unexpected end of input while parsing ${fmt(kind.pos)}"
+        is ErrorKind.UnexpectedChar -> {
+            "unexpected character ${fmt(QuotedChar(kind.ch))} while parsing ${fmt(kind.pos)}"
         }
+        is ErrorKind.UnexpectedCharAfter -> {
+            "unexpected character ${fmt(QuotedChar(kind.ch))} after ${fmt(kind.pos)}"
+        }
+        is ErrorKind.ExpectedCommaFound -> {
+            "expected comma after ${fmt(kind.pos)}, found ${fmt(QuotedChar(kind.ch))}"
+        }
+        is ErrorKind.LeadingZero -> "invalid leading zero in ${fmt(kind.pos)}"
+        is ErrorKind.Overflow -> "value of ${fmt(kind.pos)} exceeds u64::MAX"
+        is ErrorKind.EmptySegment -> "empty identifier segment in ${fmt(kind.pos)}"
+        is ErrorKind.IllegalCharacter -> "unexpected character in ${fmt(kind.pos)}"
+        is ErrorKind.WildcardNotTheOnlyComparator -> {
+            "wildcard req (${kind.ch}) must be the only comparator in the version req"
+        }
+        ErrorKind.UnexpectedAfterWildcard -> "unexpected character after wildcard in version req"
+        ErrorKind.ExcessiveComparators -> "excessive number of version comparators"
     }
+
+private fun fmt(position: Position): String =
+    run {
+        val formatter =
+            when (position) {
+                Position.Major -> "major version number"
+                Position.Minor -> "minor version number"
+                Position.Patch -> "patch version number"
+                Position.Pre -> "pre-release identifier"
+                Position.Build -> "build metadata"
+            }
+        formatter
+    }
+
+private fun fmt(quotedChar: QuotedChar): String = quotedChar.toString()
+
+private class DebugError(val error: Error)
+
+private fun fmt(debug: DebugError): String {
+    val formatter = StringBuilder()
+    formatter.append("Error(\"")
+    formatter.append(fmt(debug.error))
+    formatter.append("\")")
+    return formatter.toString()
+}
+
+internal fun legacyErrorDisplay(kind: ErrorKind): String =
+    when (kind) {
+        ErrorKind.Empty -> "empty string, expected a semver version"
+        is ErrorKind.UnexpectedEnd -> "unexpected end of input while parsing ${positionDisplay(kind.pos)}"
+        is ErrorKind.UnexpectedChar -> {
+            "unexpected character ${QuotedChar(kind.ch)} while parsing ${positionDisplay(kind.pos)}"
+        }
+        is ErrorKind.UnexpectedCharAfter -> {
+            "unexpected character ${QuotedChar(kind.ch)} after ${positionDisplay(kind.pos)}"
+        }
+        is ErrorKind.ExpectedCommaFound -> {
+            "expected comma after ${positionDisplay(kind.pos)}, found ${QuotedChar(kind.ch)}"
+        }
+        is ErrorKind.LeadingZero -> "invalid leading zero in ${positionDisplay(kind.pos)}"
+        is ErrorKind.Overflow -> "value of ${positionDisplay(kind.pos)} exceeds u64::MAX"
+        is ErrorKind.EmptySegment -> "empty identifier segment in ${positionDisplay(kind.pos)}"
+        is ErrorKind.IllegalCharacter -> "unexpected character in ${positionDisplay(kind.pos)}"
+        is ErrorKind.WildcardNotTheOnlyComparator -> {
+            "wildcard req (${kind.ch}) must be the only comparator in the version req"
+        }
+        ErrorKind.UnexpectedAfterWildcard -> "unexpected character after wildcard in version req"
+        ErrorKind.ExcessiveComparators -> "excessive number of version comparators"
+    }
+
+internal fun positionDisplay(position: Position): String =
+    when (position) {
+        Position.Major -> "major version number"
+        Position.Minor -> "minor version number"
+        Position.Patch -> "patch version number"
+        Position.Pre -> "pre-release identifier"
+        Position.Build -> "build metadata"
+    }
+
+private class QuotedChar(private val ch: Char) {
+    override fun toString(): String =
+        if (ch == '\u0000') {
+            "'\\0'"
+        } else {
+            debugQuoteChar(ch)
+        }
+}
+
+private fun debugQuoteChar(ch: Char): String {
+    val body =
+        when (ch) {
+            '\t' -> "\\t"
+            '\n' -> "\\n"
+            '\r' -> "\\r"
+            '\\' -> "\\\\"
+            '\'' -> "\\'"
+            '"' -> "\\\""
+            else ->
+                if (ch.code < 0x20 || ch.code == 0x7f) {
+                    "\\u{${ch.code.toString(16)}}"
+                } else {
+                    ch.toString()
+                }
+        }
     return "'$body'"
 }
