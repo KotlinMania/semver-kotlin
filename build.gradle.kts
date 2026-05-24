@@ -197,10 +197,18 @@ kotlin {
         binaries.framework { baseName = "Semver"; xcf.add(this) }
     }
     iosSimulatorArm64 {
-        binaries.framework { baseName = "Semver"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Semver"
+            isStatic = true
+            xcf.add(this)
+        }
     }
     iosX64 {
-        binaries.framework { baseName = "Semver"; xcf.add(this) }
+        binaries.framework {
+            baseName = "Semver"
+            isStatic = true
+            xcf.add(this)
+        }
     }
 
     tvosArm64 {
