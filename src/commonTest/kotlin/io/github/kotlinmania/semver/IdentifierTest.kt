@@ -4,7 +4,6 @@ package io.github.kotlinmania.semver
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class IdentifierTest {
     @Test
@@ -44,4 +43,16 @@ class IdentifierTest {
         val err = prereleaseErr("1.b\u0000")
         assertToString(err, "unexpected character in pre-release identifier")
     }
+
+    // test_autotrait (tests/test_autotrait.rs): asserts Send + Sync marker trait
+    // bounds on all public types. Kotlin/JVM objects are implicitly Send/Sync via
+    // the JVM memory model; there is no equivalent compile-time trait-bound check.
+
+    // benches/parse.rs: uses Rust nightly #![feature(test)] Bencher API, which has
+    // no Kotlin common equivalent. The parse/eval logic is covered by VersionTest
+    // and VersionReqTest.
+
+    // tests/node/mod.rs: behind #[cfg(test_node_semver)], shells out to the Node.js
+    // `semver` npm package to cross-check behavior. Requires a Node.js runtime and
+    // is a Rust integration-test harness, not portable to Kotlin common tests.
 }

@@ -105,6 +105,29 @@ class VersionTest {
     }
 
     @Test
+    fun le() {
+        assertTrue(version("0.0.0") <= version("1.2.3-alpha2"))
+        assertTrue(version("1.0.0") <= version("1.2.3-alpha2"))
+        assertTrue(version("1.2.0") <= version("1.2.3-alpha2"))
+        assertTrue(version("1.2.3-alpha1") <= version("1.2.3-alpha2"))
+        assertTrue(version("1.2.3-alpha2") <= version("1.2.3-alpha2"))
+        assertTrue(version("1.2.3+23") <= version("1.2.3+42"))
+    }
+
+    @Test
+    fun ge() {
+        assertTrue(version("1.2.3-alpha2") >= version("0.0.0"))
+        assertTrue(version("1.2.3-alpha2") >= version("1.0.0"))
+        assertTrue(version("1.2.3-alpha2") >= version("1.2.0"))
+        assertTrue(version("1.2.3-alpha2") >= version("1.2.3-alpha1"))
+        assertTrue(version("1.2.3-alpha2") >= version("1.2.3-alpha2"))
+        assertFalse(version("1.2.3+23") >= version("1.2.3+42"))
+    }
+
+    // test_align: Rust format alignment (format!("{:20}", version)) relies on
+    // std::fmt::Formatter width/fill/align, which has no Kotlin common equivalent.
+
+    @Test
     fun specOrder() {
         val versions =
             listOf(

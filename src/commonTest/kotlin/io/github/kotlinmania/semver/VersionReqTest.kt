@@ -39,6 +39,16 @@ class VersionReqTest {
         assertMatchAll(r, listOf("1.0.0"))
         assertMatchNone(r, listOf("1.0.1", "0.9.9", "0.10.0", "0.1.0", "1.0.0-pre"))
 
+        r = req("=0.9.0")
+        assertToString(r, "=0.9.0")
+        assertMatchAll(r, listOf("0.9.0"))
+        assertMatchNone(r, listOf("0.9.1", "1.9.0", "0.0.9", "0.9.0-pre"))
+
+        r = req("=0.0.2")
+        assertToString(r, "=0.0.2")
+        assertMatchAll(r, listOf("0.0.2"))
+        assertMatchNone(r, listOf("0.0.1", "0.0.3", "0.0.2-pre"))
+
         r = req("=0.1.0-beta2.a")
         assertToString(r, "=0.1.0-beta2.a")
         assertMatchAll(r, listOf("0.1.0-beta2.a"))
@@ -207,6 +217,25 @@ class VersionReqTest {
         assertMatchNone(r, listOf("1.9.0", "1.0.9", "2.0.1", "0.1.3", "1.2.2-pre"))
         assertEquals(r, req("1.2.x"))
         assertEquals(r, req("1.2.X"))
+    }
+
+    @Test
+    fun logicalOr() {
+        assertToString(reqErr("=1.2.3 || =2.3.4"), "expected comma after patch version number, found '|'")
+        assertToString(reqErr("1.1 || =1.2.3"), "expected comma after minor version number, found '|'")
+        assertToString(reqErr("6.* || 8.* || >= 10.*"), "expected comma after minor version number, found '|'")
+    }
+
+    @Test
+    fun any() {
+        val r = VersionReq.STAR
+        assertMatchAll(r, listOf("0.0.1", "0.1.0", "1.0.0"))
+    }
+
+    @Test
+    fun pre() {
+        val r = req("=2.1.1-really.0")
+        assertMatchAll(r, listOf("2.1.1-really.0"))
     }
 
     @Test

@@ -13,7 +13,9 @@ package io.github.kotlinmania.semver
  * println(err)
  * ```
  */
-class Error internal constructor(internal var kind: ErrorKind) : RuntimeException() {
+class Error internal constructor(
+    internal var kind: ErrorKind,
+) : RuntimeException() {
     override val message: String
         get() = errorDisplay(kind)
 
@@ -112,9 +114,9 @@ private fun VersionReq.Companion.fromStr(input: String): VersionReq {
         if (rest.isEmpty()) {
             return VersionReq.STAR
         } else if (rest.startsWith(",")) {
-                throw Error.new(ErrorKind.WildcardNotTheOnlyComparator(wildcard.ch))
+            throw Error.new(ErrorKind.WildcardNotTheOnlyComparator(wildcard.ch))
         } else {
-                throw Error.new(ErrorKind.UnexpectedAfterWildcard)
+            throw Error.new(ErrorKind.UnexpectedAfterWildcard)
         }
     }
 
@@ -148,13 +150,26 @@ private fun BuildMetadata.Companion.fromStr(text: String): BuildMetadata {
     return result.value
 }
 
-private data class NumericResult(val value: ULong, val rest: String)
+private data class NumericResult(
+    val value: ULong,
+    val rest: String,
+)
 
-private data class TextResult<T>(val value: T, val rest: String)
+private data class TextResult<T>(
+    val value: T,
+    val rest: String,
+)
 
-private data class WildcardResult(val ch: Char, val rest: String)
+private data class WildcardResult(
+    val ch: Char,
+    val rest: String,
+)
 
-private data class ComparatorResult(val comparator: Comparator, val pos: Position, val rest: String)
+private data class ComparatorResult(
+    val comparator: Comparator,
+    val pos: Position,
+    val rest: String,
+)
 
 private fun numericIdentifier(input: String, pos: Position): NumericResult {
     var len = 0
