@@ -2,9 +2,6 @@
 package io.github.kotlinmania.semver
 
 internal fun displayVersion(version: Version): String =
-    fmt(version)
-
-internal fun fmt(version: Version): String =
     pad(
         doDisplay = {
             buildString {
@@ -36,17 +33,13 @@ internal fun fmt(version: Version): String =
         },
     )
 
-internal fun displayVersionReq(req: VersionReq): String = fmt(req)
-
-internal fun fmt(req: VersionReq): String {
-    val formatter = StringBuilder()
-    val comparators = req.comparators
+internal fun displayVersionReq(req: VersionReq): String {
     if (req.comparators.isEmpty()) {
-        formatter.writeStr("*")
-        return formatter.toString()
+        return "*"
     }
+    val formatter = StringBuilder()
     var i = 0
-    for (comparator in comparators) {
+    for (comparator in req.comparators) {
         if (i > 0) {
             formatter.writeStr(", ")
         }
@@ -56,129 +49,45 @@ internal fun fmt(req: VersionReq): String {
     return formatter.toString()
 }
 
-internal fun displayComparator(comparator: Comparator): String = fmt(comparator)
-
-internal fun fmt(comparator: Comparator): String =
-    run {
-        val formatter = StringBuilder()
-        val op =
-            when (comparator.op) {
-                Op.Exact -> "="
-                Op.Greater -> ">"
-                Op.GreaterEq -> ">="
-                Op.Less -> "<"
-                Op.LessEq -> "<="
-                Op.Tilde -> "~"
-                Op.Caret -> "^"
-                Op.Wildcard -> ""
-            }
-        formatter.writeStr(op)
-        formatter.writeStr(comparator.major.toString())
-        val minor = comparator.minor
-        if (minor != null) {
+internal fun displayComparator(comparator: Comparator): String {
+    val formatter = StringBuilder()
+    val op =
+        when (comparator.op) {
+            Op.Exact -> "="
+            Op.Greater -> ">"
+            Op.GreaterEq -> ">="
+            Op.Less -> "<"
+            Op.LessEq -> "<="
+            Op.Tilde -> "~"
+            Op.Caret -> "^"
+            Op.Wildcard -> ""
+        }
+    formatter.writeStr(op)
+    formatter.writeStr(comparator.major.toString())
+    val minor = comparator.minor
+    if (minor != null) {
+        formatter.writeStr(".")
+        formatter.writeStr(minor.toString())
+        val patch = comparator.patch
+        if (patch != null) {
             formatter.writeStr(".")
-            formatter.writeStr(minor.toString())
-            val patch = comparator.patch
-            if (patch != null) {
-                formatter.writeStr(".")
-                formatter.writeStr(patch.toString())
-                if (!comparator.pre.isEmpty()) {
-                    formatter.writeStr("-")
-                    formatter.writeStr(comparator.pre.toString())
-                }
-            } else if (comparator.op == Op.Wildcard) {
-                formatter.writeStr(".*")
+            formatter.writeStr(patch.toString())
+            if (!comparator.pre.isEmpty()) {
+                formatter.writeStr("-")
+                formatter.writeStr(comparator.pre.toString())
             }
         } else if (comparator.op == Op.Wildcard) {
             formatter.writeStr(".*")
         }
-        formatter.toString()
+    } else if (comparator.op == Op.Wildcard) {
+        formatter.writeStr(".*")
     }
-
-internal fun displayPrerelease(prerelease: Prerelease): String = fmt(prerelease)
-
-internal fun fmt(prerelease: Prerelease): String {
-    val formatter = StringBuilder()
-    formatter.writeStr(prerelease.asStr())
     return formatter.toString()
 }
 
-internal fun displayBuildMetadata(buildMetadata: BuildMetadata): String = fmt(buildMetadata)
+internal fun displayPrerelease(prerelease: Prerelease): String = prerelease.asStr()
 
-internal fun fmt(buildMetadata: BuildMetadata): String {
-    val formatter = StringBuilder()
-    formatter.writeStr(buildMetadata.asStr())
-    return formatter.toString()
-}
-
-internal fun debugVersion(version: Version): String =
-    fmt(DebugVersion(version))
-
-private class DebugVersion(val version: Version)
-
-private fun fmt(debug: DebugVersion): String {
-    val version = debug.version
-    return buildString {
-        append("Version(major=")
-        append(version.major)
-        append(", minor=")
-        append(version.minor)
-        append(", patch=")
-        append(version.patch)
-        if (!version.pre.isEmpty()) {
-            append(", pre=")
-            append(debugPrerelease(version.pre))
-        }
-        if (!version.build.isEmpty()) {
-            append(", build=")
-            append(debugBuildMetadata(version.build))
-        }
-        append(')')
-    }
-}
-
-internal fun debugFmt(version: Version): String =
-    buildString {
-        append("Version(major=")
-        append(version.major)
-        append(", minor=")
-        append(version.minor)
-        append(", patch=")
-        append(version.patch)
-        if (!version.pre.isEmpty()) {
-            append(", pre=")
-            append(debugPrerelease(version.pre))
-        }
-        if (!version.build.isEmpty()) {
-            append(", build=")
-            append(debugBuildMetadata(version.build))
-        }
-        append(')')
-    }
-
-internal fun debugPrerelease(prerelease: Prerelease): String =
-    fmt(DebugPrerelease(prerelease))
-
-private class DebugPrerelease(val prerelease: Prerelease)
-
-private fun fmt(debug: DebugPrerelease): String {
-    val formatter = "Prerelease(\"${debug.prerelease}\")"
-    return formatter
-}
-
-internal fun debugFmt(prerelease: Prerelease): String = fmt(DebugPrerelease(prerelease))
-
-internal fun debugBuildMetadata(buildMetadata: BuildMetadata): String =
-    fmt(DebugBuildMetadata(buildMetadata))
-
-private class DebugBuildMetadata(val buildMetadata: BuildMetadata)
-
-private fun fmt(debug: DebugBuildMetadata): String {
-    val formatter = "BuildMetadata(\"${debug.buildMetadata}\")"
-    return formatter
-}
-
-internal fun debugFmt(buildMetadata: BuildMetadata): String = fmt(DebugBuildMetadata(buildMetadata))
+internal fun displayBuildMetadata(buildMetadata: BuildMetadata): String = buildMetadata.asStr()
 
 private fun pad(doDisplay: () -> String, doLen: () -> Int, minWidth: Int? = null): String {
     val width = minWidth ?: return doDisplay()
@@ -203,13 +112,12 @@ private fun pad(doDisplay: () -> String, doLen: () -> Int, minWidth: Int? = null
     }
 }
 
-private fun digits(`val`: ULong): Int {
-    return if (`val` < 10uL) {
+private fun digits(`val`: ULong): Int =
+    if (`val` < 10uL) {
         1
     } else {
         1 + digits(`val` / 10uL)
     }
-}
 
 private fun boolLen(value: Boolean): Int = if (value) 1 else 0
 

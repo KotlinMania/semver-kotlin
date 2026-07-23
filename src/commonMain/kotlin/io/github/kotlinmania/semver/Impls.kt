@@ -1,20 +1,6 @@
 // port-lint: source impls.rs
 package io.github.kotlinmania.semver
 
-private typealias Target = String
-
-internal fun default(): Identifier = Identifier.empty()
-
-internal fun hash(identifier: Identifier): Int = identifier.asStr().hashCode()
-
-internal fun deref(prerelease: Prerelease): Target = prerelease.identifier.asStr()
-
-internal fun deref(buildMetadata: BuildMetadata): Target = buildMetadata.identifier.asStr()
-
-internal fun partialCmp(lhs: Prerelease, rhs: Prerelease): Int? = cmp(lhs, rhs)
-
-internal fun partialCmp(lhs: BuildMetadata, rhs: BuildMetadata): Int? = cmp(lhs, rhs)
-
 internal fun compareVersion(lhs: Version, rhs: Version): Int =
     compareValuesBy(lhs, rhs, Version::major, Version::minor, Version::patch)
         .thenCompare(cmp(lhs.pre, rhs.pre))
@@ -94,19 +80,8 @@ internal fun cmp(lhs: BuildMetadata, rhs: BuildMetadata): Int {
     return lhsSegments.size.compareTo(rhsSegments.size)
 }
 
-fun Iterable<Comparator>.toVersionReq(): VersionReq = fromIter(this)
+fun Iterable<Comparator>.toVersionReq(): VersionReq = VersionReq(this.toList())
 
-internal fun fromIter(iter: Iterable<Comparator>): VersionReq {
-    val comparators = iter.toList()
-    return VersionReq(comparators)
-}
+private fun String.allAsciiDigits(): Boolean = all { ch -> ch in '0'..'9' }
 
-private fun String.allAsciiDigits(): Boolean =
-    all { ch -> ch in '0'..'9' }
-
-private fun Int.thenCompare(next: Int): Int =
-    if (this != 0) {
-        this
-    } else {
-        next
-    }
+private fun Int.thenCompare(next: Int): Int = if (this != 0) this else next

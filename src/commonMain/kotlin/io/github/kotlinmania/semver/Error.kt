@@ -21,14 +21,10 @@ internal enum class Position {
     Minor,
     Patch,
     Pre,
-    Build;
+    Build,
 }
 
-internal fun errorDisplay(kind: ErrorKind): String =
-    fmt(Error(kind))
-
-internal fun debugErrorDisplay(error: Error): String =
-    fmt(DebugError(error))
+internal fun errorDisplay(kind: ErrorKind): String = fmt(Error(kind))
 
 internal fun fmt(error: Error): String =
     when (val kind = error.kind) {
@@ -55,55 +51,6 @@ internal fun fmt(error: Error): String =
     }
 
 private fun fmt(position: Position): String =
-    run {
-        val formatter =
-            when (position) {
-                Position.Major -> "major version number"
-                Position.Minor -> "minor version number"
-                Position.Patch -> "patch version number"
-                Position.Pre -> "pre-release identifier"
-                Position.Build -> "build metadata"
-            }
-        formatter
-    }
-
-private fun fmt(quotedChar: QuotedChar): String = quotedChar.toString()
-
-private class DebugError(val error: Error)
-
-private fun fmt(debug: DebugError): String {
-    val formatter = StringBuilder()
-    formatter.append("Error(\"")
-    formatter.append(fmt(debug.error))
-    formatter.append("\")")
-    return formatter.toString()
-}
-
-internal fun legacyErrorDisplay(kind: ErrorKind): String =
-    when (kind) {
-        ErrorKind.Empty -> "empty string, expected a semver version"
-        is ErrorKind.UnexpectedEnd -> "unexpected end of input while parsing ${positionDisplay(kind.pos)}"
-        is ErrorKind.UnexpectedChar -> {
-            "unexpected character ${QuotedChar(kind.ch)} while parsing ${positionDisplay(kind.pos)}"
-        }
-        is ErrorKind.UnexpectedCharAfter -> {
-            "unexpected character ${QuotedChar(kind.ch)} after ${positionDisplay(kind.pos)}"
-        }
-        is ErrorKind.ExpectedCommaFound -> {
-            "expected comma after ${positionDisplay(kind.pos)}, found ${QuotedChar(kind.ch)}"
-        }
-        is ErrorKind.LeadingZero -> "invalid leading zero in ${positionDisplay(kind.pos)}"
-        is ErrorKind.Overflow -> "value of ${positionDisplay(kind.pos)} exceeds u64::MAX"
-        is ErrorKind.EmptySegment -> "empty identifier segment in ${positionDisplay(kind.pos)}"
-        is ErrorKind.IllegalCharacter -> "unexpected character in ${positionDisplay(kind.pos)}"
-        is ErrorKind.WildcardNotTheOnlyComparator -> {
-            "wildcard req (${kind.ch}) must be the only comparator in the version req"
-        }
-        ErrorKind.UnexpectedAfterWildcard -> "unexpected character after wildcard in version req"
-        ErrorKind.ExcessiveComparators -> "excessive number of version comparators"
-    }
-
-internal fun positionDisplay(position: Position): String =
     when (position) {
         Position.Major -> "major version number"
         Position.Minor -> "minor version number"
@@ -111,6 +58,8 @@ internal fun positionDisplay(position: Position): String =
         Position.Pre -> "pre-release identifier"
         Position.Build -> "build metadata"
     }
+
+private fun fmt(quotedChar: QuotedChar): String = quotedChar.toString()
 
 private class QuotedChar(private val ch: Char) {
     override fun toString(): String =
