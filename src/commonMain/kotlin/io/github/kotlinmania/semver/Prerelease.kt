@@ -5,8 +5,9 @@ package io.github.kotlinmania.semver
  * Optional pre-release identifier on a version string. This comes after `-` in
  * a SemVer version, like `1.0.0-alpha.1`.
  */
-class Prerelease internal constructor(internal val identifier: Identifier) :
-    CharSequence,
+class Prerelease internal constructor(
+    internal val identifier: Identifier,
+) : CharSequence,
     Comparable<Prerelease> {
     override val length: Int
         get() = asStr().length

@@ -5,8 +5,9 @@ package io.github.kotlinmania.semver
  * Optional build metadata identifier. This comes after `+` in a SemVer
  * version, as in `0.8.1+zstd.1.5.0`.
  */
-class BuildMetadata internal constructor(internal val identifier: Identifier) :
-    CharSequence,
+class BuildMetadata internal constructor(
+    internal val identifier: Identifier,
+) : CharSequence,
     Comparable<BuildMetadata> {
     override val length: Int
         get() = asStr().length

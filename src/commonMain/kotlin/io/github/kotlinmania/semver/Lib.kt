@@ -21,3 +21,5 @@ package io.github.kotlinmania.semver
 //
 // Callers migrated:
 //   (none)
+
+private const val CRATE_ROOT = "io.github.kotlinmania.semver"

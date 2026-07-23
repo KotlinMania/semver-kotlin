@@ -10,7 +10,9 @@ package io.github.kotlinmania.semver
 // or manual allocation in common code, so this port wraps a plain String
 // and preserves the same API surface and equality behaviour.
 
-internal class Identifier private constructor(internal val value: String) {
+internal class Identifier private constructor(
+    internal val value: String,
+) {
     companion object {
         fun empty(): Identifier = EMPTY
 

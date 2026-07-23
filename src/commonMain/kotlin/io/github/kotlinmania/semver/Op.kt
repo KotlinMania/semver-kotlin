@@ -12,7 +12,8 @@ enum class Op {
     LessEq,
     Tilde,
     Caret,
-    Wildcard;
+    Wildcard,
+    ;
 
     companion object {
         internal val DEFAULT: Op = Caret

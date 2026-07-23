@@ -13,7 +13,9 @@ import kotlinx.serialization.Serializable
  * whether any comparator matches a particular version.
  */
 @Serializable(with = VersionReqSerializer::class)
-data class VersionReq(val comparators: List<Comparator>) {
+data class VersionReq(
+    val comparators: List<Comparator>,
+) {
     constructor() : this(starComparators())
 
     fun matches(version: Version): Boolean = matchesReq(this, version)

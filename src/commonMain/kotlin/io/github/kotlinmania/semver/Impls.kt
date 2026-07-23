@@ -64,7 +64,8 @@ internal fun cmp(lhs: BuildMetadata, rhs: BuildMetadata): Int {
                 left.allAsciiDigits() && right.allAsciiDigits() -> {
                     val leftValue = left.trimStart('0')
                     val rightValue = right.trimStart('0')
-                    leftValue.length.compareTo(rightValue.length)
+                    leftValue.length
+                        .compareTo(rightValue.length)
                         .thenCompare(leftValue.compareTo(rightValue))
                         .thenCompare(left.length.compareTo(right.length))
                 }

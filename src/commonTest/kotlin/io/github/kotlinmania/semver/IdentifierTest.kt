@@ -4,7 +4,6 @@ package io.github.kotlinmania.semver
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class IdentifierTest {
     @Test

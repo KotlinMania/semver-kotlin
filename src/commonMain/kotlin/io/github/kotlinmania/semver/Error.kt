@@ -3,16 +3,48 @@ package io.github.kotlinmania.semver
 
 internal sealed class ErrorKind {
     data object Empty : ErrorKind()
-    data class UnexpectedEnd(val pos: Position) : ErrorKind()
-    data class UnexpectedChar(val pos: Position, val ch: Char) : ErrorKind()
-    data class UnexpectedCharAfter(val pos: Position, val ch: Char) : ErrorKind()
-    data class ExpectedCommaFound(val pos: Position, val ch: Char) : ErrorKind()
-    data class LeadingZero(val pos: Position) : ErrorKind()
-    data class Overflow(val pos: Position) : ErrorKind()
-    data class EmptySegment(val pos: Position) : ErrorKind()
-    data class IllegalCharacter(val pos: Position) : ErrorKind()
-    data class WildcardNotTheOnlyComparator(val ch: Char) : ErrorKind()
+
+    data class UnexpectedEnd(
+        val pos: Position,
+    ) : ErrorKind()
+
+    data class UnexpectedChar(
+        val pos: Position,
+        val ch: Char,
+    ) : ErrorKind()
+
+    data class UnexpectedCharAfter(
+        val pos: Position,
+        val ch: Char,
+    ) : ErrorKind()
+
+    data class ExpectedCommaFound(
+        val pos: Position,
+        val ch: Char,
+    ) : ErrorKind()
+
+    data class LeadingZero(
+        val pos: Position,
+    ) : ErrorKind()
+
+    data class Overflow(
+        val pos: Position,
+    ) : ErrorKind()
+
+    data class EmptySegment(
+        val pos: Position,
+    ) : ErrorKind()
+
+    data class IllegalCharacter(
+        val pos: Position,
+    ) : ErrorKind()
+
+    data class WildcardNotTheOnlyComparator(
+        val ch: Char,
+    ) : ErrorKind()
+
     data object UnexpectedAfterWildcard : ErrorKind()
+
     data object ExcessiveComparators : ErrorKind()
 }
 
@@ -61,7 +93,9 @@ private fun fmt(position: Position): String =
 
 private fun fmt(quotedChar: QuotedChar): String = quotedChar.toString()
 
-private class QuotedChar(private val ch: Char) {
+private class QuotedChar(
+    private val ch: Char,
+) {
     override fun toString(): String =
         if (ch == '\u0000') {
             "'\\0'"
