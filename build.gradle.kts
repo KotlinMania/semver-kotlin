@@ -247,6 +247,17 @@ fun installProjectAndroidSdk(execOperations: ExecOperations) {
 
 writeAndroidLocalProperties()
 
+fun requestedTaskWantsAndroid(rawTaskName: String): Boolean {
+    val taskName = rawTaskName.substringAfterLast(':')
+    if (taskName.contains("AndroidNative")) return false
+    if (taskName.contains("Android")) return true
+    return taskName in setOf("build", "assemble", "check")
+}
+
+if (gradle.startParameter.taskNames.any(::requestedTaskWantsAndroid)) {
+    installProjectAndroidSdk(serviceOf())
+}
+
 val ensureAndroidSdk by tasks.registering {
     group = "setup"
     description = "Ensures the project-local Android SDK is installed (idempotent)."
@@ -256,9 +267,15 @@ val ensureAndroidSdk by tasks.registering {
     }
 }
 
-tasks.matching { it.name == "compileAndroidMain" }.configureEach {
-    dependsOn(ensureAndroidSdk)
-}
+tasks
+    .matching { task ->
+        val taskName = task.name
+        taskName != "ensureAndroidSdk" &&
+            taskName.contains("Android") &&
+            !taskName.contains("AndroidNative")
+    }.configureEach {
+        dependsOn(ensureAndroidSdk)
+    }
 
 // Gap #9b: KGP-generated bridge boilerplate and KotlinCoroutineSupport runtime
 // produce warnings (unchecked casts, unused expressions, opt-in requirements)
