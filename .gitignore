@@ -33,8 +33,12 @@ tmp/
 # AST distance reports and binaries
 port_status_report.md
 high_priority_ports.md
+port_lint_proposed_changes.md
 ast_distance_*.txt
+tools/
 tools/ast_distance
+tools/ast_distance/ast_distance
+tools/ast_distance/build/
 
 # Swift Package Manager / Xcode workspace state
 .swiftpm/
