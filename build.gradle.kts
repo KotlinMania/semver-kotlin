@@ -964,7 +964,7 @@ tasks.register("swiftExportSmokeTest") {
             if (!text.contains("platforms:")) {
                 generatedPackageSwift.writeText(
                     text.replaceFirst(
-                        Regex("(name:\\s*\"[^\"]*\",)"),
+                        Regex("""(let package = Package\(\s*name:\s*"[^"]*",)"""),
                         "\$1\n    platforms: [.macOS(.v14)],",
                     ),
                 )
