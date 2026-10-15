@@ -1,6 +1,10 @@
 // port-lint: source lib.rs
 package io.github.kotlinmania.semver
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import kotlinx.serialization.Serializable
 
 /**
@@ -15,14 +19,17 @@ import kotlinx.serialization.Serializable
 @Serializable(with = VersionReqSerializer::class)
 data class VersionReq(
     val comparators: List<Comparator>,
-) {
+) : Serialize {
     constructor() : this(starComparators())
 
     fun matches(version: Version): Boolean = matchesReq(this, version)
 
     override fun toString(): String = displayVersionReq(this)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+        serializer.collectStr(this)
+
+    companion object : Deserialize<VersionReq> by VersionReqDeserialize {
         /**
          * A [VersionReq] with no constraint on the version numbers it matches.
          * Equivalent to `VersionReq.parse("*").getOrThrow()`.
