@@ -1,6 +1,10 @@
 // port-lint: source lib.rs
 package io.github.kotlinmania.semver
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import kotlinx.serialization.Serializable
 
 /**
@@ -27,10 +31,14 @@ data class Version(
     val patch: ULong,
     val pre: Prerelease = Prerelease.EMPTY,
     val build: BuildMetadata = BuildMetadata.EMPTY,
-) : Comparable<Version> {
+) : Comparable<Version>,
+    Serialize {
     override fun compareTo(other: Version): Int = compareVersion(this, other)
 
     override fun toString(): String = displayVersion(this)
+
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+        serializer.collectStr(this)
 
     /**
      * Compare the major, minor, patch, and pre-release value of two versions,
@@ -40,7 +48,7 @@ data class Version(
      */
     fun cmpPrecedence(other: Version): Int = compareVersionPrecedence(this, other)
 
-    companion object {
+    companion object : Deserialize<Version> by VersionDeserialize {
         /**
          * Create [Version] with an empty pre-release and build metadata.
          */

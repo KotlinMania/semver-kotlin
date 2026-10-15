@@ -1,6 +1,10 @@
 // port-lint: source lib.rs
 package io.github.kotlinmania.semver
 
+import io.github.kotlinmania.serde.SerdeResult
+import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.ser.Serialize
+import io.github.kotlinmania.serdecore.ser.Serializer
 import kotlinx.serialization.Serializable
 
 /**
@@ -14,12 +18,15 @@ data class Comparator(
     val minor: ULong?,
     val patch: ULong?,
     val pre: Prerelease = Prerelease.EMPTY,
-) {
+) : Serialize {
     fun matches(version: Version): Boolean = matchesComparator(this, version)
 
     override fun toString(): String = displayComparator(this)
 
-    companion object {
+    override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
+        serializer.collectStr(this)
+
+    companion object : Deserialize<Comparator> by ComparatorDeserialize {
         fun parse(text: String): Result<Comparator> = parseComparator(text)
     }
 }
