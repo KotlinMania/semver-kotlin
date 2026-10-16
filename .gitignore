@@ -53,4 +53,6 @@ java_pid*.hprof
 
 # Python bytecode
 __pycache__/
-*.pyc
+*.pycnode_modules/
+package-lock.json
+node_modules/
