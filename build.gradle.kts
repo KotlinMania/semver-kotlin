@@ -947,7 +947,7 @@ tasks.matching { it.name.contains("GenerateSPMPackage") }.configureEach {
                     file.writeText(
                         text.replaceFirst(
                             Regex("""(let package = Package\s*\(\s*name:\s*"[^"]*",)"""),
-                            "$1\n    platforms: [.macOS(.v15)],",
+                            "$1\n    platforms: [.macOS(\"15.0\")],",
                         ),
                     )
                 }
