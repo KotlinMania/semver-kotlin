@@ -55,3 +55,4 @@ java_pid*.hprof
 __pycache__/
 *.pycnode_modules/
 package-lock.json
+node_modules/
