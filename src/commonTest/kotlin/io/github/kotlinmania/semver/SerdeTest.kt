@@ -12,14 +12,14 @@ class SerdeTest {
         val version = Version.new(1u, 2u, 3u)
         assertTokens(
             version,
-            VersionDeserialize,
+            Version,
             listOf(Token.Str("1.2.3")),
         )
 
         val parsed = Version.parse("1.2.3-alpha.1+build.001").getOrThrow()
         assertTokens(
             parsed,
-            VersionDeserialize,
+            Version,
             listOf(Token.Str("1.2.3-alpha.1+build.001")),
         )
     }
@@ -29,7 +29,7 @@ class SerdeTest {
         val req = VersionReq.parse(">=1.2.3, <2.0.0").getOrThrow()
         assertTokens(
             req,
-            VersionReqDeserialize,
+            VersionReq,
             listOf(Token.Str(">=1.2.3, <2.0.0")),
         )
     }
@@ -39,7 +39,7 @@ class SerdeTest {
         val comp = Comparator.parse(">=1.2.3").getOrThrow()
         assertTokens(
             comp,
-            ComparatorDeserialize,
+            Comparator,
             listOf(Token.Str(">=1.2.3")),
         )
     }
@@ -47,7 +47,7 @@ class SerdeTest {
     @Test
     fun testVersionDeError() {
         assertDeTokensError(
-            VersionDeserialize,
+            Version,
             listOf(Token.Str("invalid-version-string-not-semver")),
             "unexpected character 'i' while parsing major version number",
         )
