@@ -1,11 +1,10 @@
-// port-lint: source lib.rs
 package io.github.kotlinmania.semver
 
 import io.github.kotlinmania.serde.SerdeResult
 import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
-import kotlinx.serialization.Serializable
 
 /**
  * SemVer version requirement describing the intersection of some version
@@ -16,7 +15,6 @@ import kotlinx.serialization.Serializable
  * on partial versions, but it is ignored because it is never relevant to
  * whether any comparator matches a particular version.
  */
-@Serializable(with = VersionReqSerializer::class)
 data class VersionReq(
     val comparators: List<Comparator>,
 ) : Serialize {
@@ -27,9 +25,12 @@ data class VersionReq(
     override fun toString(): String = displayVersionReq(this)
 
     override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
-        serializer.collectStr(this)
+        serializeVersionReq(this, serializer)
 
-    companion object : Deserialize<VersionReq> by VersionReqDeserialize {
+    companion object : Deserialize<VersionReq> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<VersionReq> =
+            deserializeVersionReq(deserializer)
+
         /**
          * A [VersionReq] with no constraint on the version numbers it matches.
          * Equivalent to `VersionReq.parse("*").getOrThrow()`.

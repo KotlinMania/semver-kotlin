@@ -1,11 +1,10 @@
-// port-lint: source lib.rs
 package io.github.kotlinmania.semver
 
 import io.github.kotlinmania.serde.SerdeResult
 import io.github.kotlinmania.serdecore.de.Deserialize
+import io.github.kotlinmania.serdecore.de.Deserializer
 import io.github.kotlinmania.serdecore.ser.Serialize
 import io.github.kotlinmania.serdecore.ser.Serializer
-import kotlinx.serialization.Serializable
 
 /**
  * SemVer version as defined by https://semver.org.
@@ -24,7 +23,6 @@ import kotlinx.serialization.Serializable
  * major, minor, patch are compared by lexicographic ordering of dot-separated
  * components of the pre-release string.
  */
-@Serializable(with = VersionSerializer::class)
 data class Version(
     val major: ULong,
     val minor: ULong,
@@ -38,7 +36,7 @@ data class Version(
     override fun toString(): String = displayVersion(this)
 
     override fun <Ok> serialize(serializer: Serializer<Ok>): SerdeResult<Ok> =
-        serializer.collectStr(this)
+        serializeVersion(this, serializer)
 
     /**
      * Compare the major, minor, patch, and pre-release value of two versions,
@@ -48,7 +46,10 @@ data class Version(
      */
     fun cmpPrecedence(other: Version): Int = compareVersionPrecedence(this, other)
 
-    companion object : Deserialize<Version> by VersionDeserialize {
+    companion object : Deserialize<Version> {
+        override fun <D : Deserializer> deserialize(deserializer: D): SerdeResult<Version> =
+            deserializeVersion(deserializer)
+
         /**
          * Create [Version] with an empty pre-release and build metadata.
          */
